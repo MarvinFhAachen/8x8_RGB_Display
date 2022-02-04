@@ -2,4 +2,4 @@
 ## Website
 ## MCU Webhost 
 ## MCU LED Controling
-## Python make useble koppy of .html
+## Python make useble copy of .html
