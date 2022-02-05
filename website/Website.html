@@ -174,6 +174,7 @@
 			
 			<button onclick="senden()">Send </button>
 			<button onclick="loechen();" >Delete </button>
+			<button onclick="setAll();" >setAll </button>
 			<button onclick="setColor('r',0);setColor('g',0);setColor('b',0); 		document.getElementById('favcolor').value = '#000000';">	Black </button>
 			<button onclick="setColor('r',255);setColor('g',255);setColor('b',255);	document.getElementById('favcolor').value = '#FFFFFF';">	White </button>
 			<div id="farb_vorschau" style="width: 50px;height: 50px;margin:0;padding:0; float:right;"></div>
@@ -194,7 +195,7 @@
 			let send2 = send.replace(/\s/g, '');
 			console.log( send2);
 			    var xmlHttp = new XMLHttpRequest();
-				xmlHttp.open( "GET", "192.168.178.42/"+send2, false ); // false for synchronous request
+				xmlHttp.open( "GET", send2, false );
 				xmlHttp.send( null );
 				
 		}
@@ -202,6 +203,12 @@
 			var all = document.getElementsByClassName('block1');
 			for (var i = 0; i < all.length; i++) {
 			  all[i].style.backgroundColor = "rgb(0,0,0)";
+			}
+		}
+		function setAll(){
+			var all = document.getElementsByClassName('block1');
+			for (var i = 0; i < all.length; i++) {
+			  all[i].style.backgroundColor = 'rgb('+r+','+g+','+b+')';
 			}
 		}
 		function kli(event){

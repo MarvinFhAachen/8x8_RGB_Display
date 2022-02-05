@@ -39,7 +39,7 @@ String header;
 void setup() {
   Serial.begin(115200);
   
-  FastLED.addLeds<WS2811,2,GRB>(leds,NUM_LEDS).setCorrection(TypicalLEDStrip);;
+  FastLED.addLeds<WS2811,2,GRB>(leds,NUM_LEDS);//.setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(50);
   
   // Mit dem WiFi-Netzwerk verbinden
@@ -101,7 +101,7 @@ void parse_answer2(String rst){
 		Serial.print(val[i+1]);
 		Serial.print(",");
 		Serial.println(val[i+2]);
-    leds[y] = CRGB(val[i],val[i+1],val[i+2]);
+    leds[XY(y/8,y%8)] = CRGB(val[i],val[i+1],val[i+2]);
     FastLED.show();
 		
 	}
@@ -333,6 +333,7 @@ send +=" \n ";
 send +=" \n ";
 send +="      <button onclick=\"senden()\">Send </button> \n ";
 send +="      <button onclick=\"loechen();\" >Delete </button> \n ";
+send +="      <button onclick=\"setAll();\" >setAll </button> \n ";
 send +="      <button onclick=\"setColor(\'r\',0);setColor(\'g\',0);setColor(\'b\',0);    document.getElementById(\'favcolor\').value = \'#000000\';\"> Black </button> \n ";
 send +="      <button onclick=\"setColor(\'r\',255);setColor(\'g\',255);setColor(\'b\',255);  document.getElementById(\'favcolor\').value = \'#FFFFFF\';\"> White </button> \n ";
 send +="      <div id=\"farb_vorschau\" style=\"width: 50px;height: 50px;margin:0;padding:0; float:right;\"></div> \n ";
@@ -353,6 +354,7 @@ send +="      } \n ";
 send +="      let send2 = send.replace(/\\s/g, \'\'); \n ";
 send +="      console.log( send2); \n ";
 send +="          var xmlHttp = new XMLHttpRequest(); \n ";
+send +="        xmlHttp.open( \"GET\", send2, false ); \n ";
 send +="        xmlHttp.send( null ); \n ";
 send +=" \n ";
 send +="    } \n ";
@@ -360,6 +362,12 @@ send +="    function loechen(){ \n ";
 send +="      var all = document.getElementsByClassName(\'block1\'); \n ";
 send +="      for (var i = 0; i < all.length; i++) { \n ";
 send +="        all[i].style.backgroundColor = \"rgb(0,0,0)\"; \n ";
+send +="      } \n ";
+send +="    } \n ";
+send +="    function setAll(){ \n ";
+send +="      var all = document.getElementsByClassName(\'block1\'); \n ";
+send +="      for (var i = 0; i < all.length; i++) { \n ";
+send +="        all[i].style.backgroundColor = \'rgb(\'+r+\',\'+g+\',\'+b+\')\'; \n ";
 send +="      } \n ";
 send +="    } \n ";
 send +="    function kli(event){ \n ";
@@ -424,7 +432,6 @@ send +=" \n ";
 send +="  </script> \n ";
 send +="  </body> \n ";
 send +="</html> \n ";
-
 
 
 
