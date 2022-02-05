@@ -184,12 +184,12 @@
 		let { r, g, b } = {r:255,g:255,b:1};console.log(r+g+b);
 		
 		function senden(){
-			let send = "";
+			let send = "r";
 			var all = document.getElementsByClassName('block1');
 			for (var i = 0; i < all.length; i++) {
 			  let cur = all[i].style.backgroundColor;
 				cur = cur.slice(4,-1);
-				send += cur +";";
+				send += cur +",";
 			}
 			let send2 = send.replace(/\s/g, '');
 			console.log( send2);
