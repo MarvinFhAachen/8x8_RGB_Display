@@ -186,7 +186,7 @@ send +="			var all = document.getElementsByClassName(\'block1\'); \n ";
 send +="			for (var i = 0; i < all.length; i++) { \n ";
 send +="			  let cur = all[i].style.backgroundColor; \n ";
 send +="				cur = cur.slice(4,-1); \n ";
-send +="				send += cur +\",\"; \n ";
+send +="				send += cur +\";\"; \n ";
 send +="			} \n ";
 send +="			let send2 = send.replace(/\s/g, \'\'); \n ";
 send +="			console.log( send2); \n ";

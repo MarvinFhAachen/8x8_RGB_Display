@@ -40,6 +40,7 @@ void loop() {
 	if(client){
 		String request = server_logic(&client);//get request data
 		Serial.print(request);
+
     //<-----------------------------------------------------------------------------------------------------------------------------------------------------respanse funktion hier einbauen auf basis der returnwerte sihe beispiel funktion unten
     
     client.stop();    Serial.println("Client disconnected");//close conection
@@ -49,6 +50,36 @@ void loop() {
 
   
 }
+
+void parse_answer(String rst){
+	int ret[8][8][3];
+	int x=0,y=0,z=0;
+	String cur_int = "";
+	for(int i = 4;i<rst.length()){
+		if(rst[i] == ' ')
+			break;
+		else if(rst[i] == ',')
+			ret[x][y][z] = cur_int.toInt();
+			cur_int = "";
+			z++;
+		else if(rst[i] == ';'){
+			ret[x][y][z] = cur_int.toInt();
+			cur_int = "";
+			z=0;
+			if(x>=7)
+			{
+				y++;
+				x=0;
+			}
+			else
+				x++;
+		}
+		cur_int+= rst[i];
+			
+			
+		
+	}
+}	
 
 String server_logic(WiFiClient* ptr_client){ //soll einen pointer auf das objeckt bekommen 
 	                             // Bei einem Aufruf des Servers
@@ -290,7 +321,7 @@ send +="			var all = document.getElementsByClassName(\'block1\'); \n ";
 send +="			for (var i = 0; i < all.length; i++) { \n ";
 send +="			  let cur = all[i].style.backgroundColor; \n ";
 send +="				cur = cur.slice(4,-1); \n ";
-send +="				send += cur +\",\"; \n ";
+send +="				send += cur +\";\"; \n ";
 send +="			} \n ";
 send +="			let send2 = send.replace(/\s/g, \'\'); \n ";
 send +="			console.log( send2); \n ";
@@ -369,6 +400,7 @@ send +="</html> \n ";
 
 
 
+
 ptr_client->print(send);
 
 	
@@ -385,3 +417,23 @@ ptr_client->print(send);
 	ptr_client->println();
   return;
 }
+
+
+//void setup() {
+// // groesse des arrays ermitteln
+// int zufall = random(2,5);
+//
+// //erstmal nur ein zeiger auf das array
+// int* zufallsarray;
+//  
+//  //speicher in der passenden groesse reservieren
+//  zufallsarray = (int*)malloc(zufall*(sizeof(int)));
+//
+//  //an allen stellen auf 0 setzen (optional)
+//  for (int i=0;i<zufall;i++) {
+//    zufallsarray[0] = 1;
+//  }
+//}
+//...
+//void loop() {
+//    ....
