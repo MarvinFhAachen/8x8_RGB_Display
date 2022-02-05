@@ -1,6 +1,26 @@
 // Library für WiFi-Verbindung
 #include <ESP8266WiFi.h>
 
+
+
+#include <FastLED.h>
+const uint8_t kMatrixWidth = 8;
+const uint8_t kMatrixHeight = 8;
+#define MAX_DIMENSION ((kMatrixWidth>kMatrixHeight) ? kMatrixWidth : kMatrixHeight)
+#define NUM_LEDS (kMatrixWidth * kMatrixHeight)
+uint16_t XY( uint8_t x, uint8_t y)
+{
+  uint16_t i;
+  i = (y * kMatrixWidth) + x;
+  return i;
+}
+CRGB leds[kMatrixWidth * kMatrixHeight];
+
+
+
+
+
+
 // Daten des WiFi-Netzwerks
 
 const char* ssid = "FRITZ!Box 7590 ZV";
@@ -18,7 +38,10 @@ String header;
 
 void setup() {
   Serial.begin(115200);
-
+  
+  FastLED.addLeds<WS2811,2,GRB>(leds,NUM_LEDS).setCorrection(TypicalLEDStrip);;
+  FastLED.setBrightness(50);
+  
   // Mit dem WiFi-Netzwerk verbinden
   Serial.print("Connecting to WiFi");
   WiFi.begin(ssid, password);
@@ -40,46 +63,50 @@ void loop() {
 	if(client){
 		String request = server_logic(&client);//get request data
 		Serial.print(request);
+		parse_answer2(request);
 
     //<-----------------------------------------------------------------------------------------------------------------------------------------------------respanse funktion hier einbauen auf basis der returnwerte sihe beispiel funktion unten
     
-    client.stop();    Serial.println("Client disconnected");//close conection
-    Serial.println("");
-		}
+		client.stop();    Serial.println("Client disconnected");//close conection
+		Serial.println("");
+	}
 
 
   
 }
 
-void parse_answer(String rst){
-	int ret[8][8][3];
-	int x=0,y=0,z=0;
-	String cur_int = "";
-	for(int i = 4;i<rst.length()){
-		if(rst[i] == ' ')
+void parse_answer2(String rst){
+	int val[192];
+	int val_pos = 0; 
+	String cur = "";
+  
+  if(rst[5] !='r' )
+      return;
+  
+	for(int i = 6;i<rst.length();i++){
+		if(rst[i] == ' ' )
 			break;
-		else if(rst[i] == ',')
-			ret[x][y][z] = cur_int.toInt();
-			cur_int = "";
-			z++;
-		else if(rst[i] == ';'){
-			ret[x][y][z] = cur_int.toInt();
-			cur_int = "";
-			z=0;
-			if(x>=7)
-			{
-				y++;
-				x=0;
-			}
-			else
-				x++;
+		if(rst[i] == ','){
+			val[val_pos] = cur.toInt();
+			cur = "";
+			val_pos++;
+		}else{
+			cur += rst[i];
 		}
-		cur_int+= rst[i];
-			
-			
+	}
+	for(int i = 0,y=0 ;i<192; i=i+3 , y++){
+		Serial.print("->");
+		Serial.print(val[i]);
+		Serial.print(",");
+		Serial.print(val[i+1]);
+		Serial.print(",");
+		Serial.println(val[i+2]);
+    leds[y] = CRGB(val[i],val[i+1],val[i+2]);
+    FastLED.show();
 		
 	}
-}	
+}
+
 
 String server_logic(WiFiClient* ptr_client){ //soll einen pointer auf das objeckt bekommen 
 	                             // Bei einem Aufruf des Servers
@@ -316,7 +343,7 @@ send +=" \n ";
 send +="		let { r, g, b } = {r:255,g:255,b:1};console.log(r+g+b); \n ";
 send +=" \n ";
 send +="		function senden(){ \n ";
-send +="			let send = \"\"; \n ";
+send +="			let send = \"r\"; \n ";
 send +="			var all = document.getElementsByClassName(\'block1\'); \n ";
 send +="			for (var i = 0; i < all.length; i++) { \n ";
 send +="			  let cur = all[i].style.backgroundColor; \n ";
@@ -325,8 +352,8 @@ send +="				send += cur +\";\"; \n ";
 send +="			} \n ";
 send +="			let send2 = send.replace(/\s/g, \'\'); \n ";
 send +="			console.log( send2); \n ";
-send +="			    var xmlHttp = new XMLHttpRequest(); \n ";
-send +="				xmlHttp.send( null ); \n ";
+send +="			  var xmlHttp = new XMLHttpRequest(); \n ";
+send +="				xmlHttp.send( \"http://192.168.178.42/\"+send2 ); \n ";
 send +=" \n ";
 send +="		} \n ";
 send +="		function loechen(){ \n ";
