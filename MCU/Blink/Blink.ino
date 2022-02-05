@@ -17,7 +17,7 @@ uint16_t XY( uint8_t x, uint8_t y)
 CRGB leds[kMatrixWidth * kMatrixHeight];
 
 
-
+bool gliter = false;
 
 
 
@@ -70,16 +70,23 @@ void loop() {
 		client.stop();    Serial.println("Client disconnected");//close conection
 		Serial.println("");
 	}
+  if(gliter){
+    leds[random(0,63)] = CRGB(random(0,255),random(0,255),random(0,255));
+    FastLED.show();
 
+  }
 
   
 }
 
 void parse_answer2(String rst){
+	    
 	int val[192];
 	int val_pos = 0; 
 	String cur = "";
-  
+
+  if(rst[5]=='g')
+    gliter = !gliter; 
   if(rst[5] !='r' )
       return;
   
@@ -102,9 +109,11 @@ void parse_answer2(String rst){
 		Serial.print(",");
 		Serial.println(val[i+2]);
     leds[XY(y/8,y%8)] = CRGB(val[i],val[i+1],val[i+2]);
-    FastLED.show();
+      
 		
 	}
+  Serial.print("BEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+  FastLED.show();
 }
 
 
