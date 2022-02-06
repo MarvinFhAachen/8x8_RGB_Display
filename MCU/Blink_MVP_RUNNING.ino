@@ -2,17 +2,12 @@
 #include <ESP8266WiFi.h>
 
 
-//HILFS SACHEN FÜR LED/////////////////////////////////////////////////////////////////
+
 #include <FastLED.h>
 const uint8_t kMatrixWidth = 8;
 const uint8_t kMatrixHeight = 8;
 #define MAX_DIMENSION ((kMatrixWidth>kMatrixHeight) ? kMatrixWidth : kMatrixHeight)
 #define NUM_LEDS (kMatrixWidth * kMatrixHeight)
-int myxy(int x, int y){
-	if(x>7 ||x<0 || y>7 || y<0 )
-		return -1 ; 
-	return ((7-x)+(y*8));
-}
 uint16_t XY( uint8_t x, uint8_t y)
 {
   uint16_t i;
@@ -20,93 +15,26 @@ uint16_t XY( uint8_t x, uint8_t y)
   return i;
 }
 CRGB leds[kMatrixWidth * kMatrixHeight];
-//FILFSSACJEN FÜR LED ENDE/////////////////////////////////////////////////////////////////
-//HILFS SACHEN FÜR Webseite/////////////////////////////////////////////////////////////////
-const char* ssid = "FRITZ!Box 7590 ZV";
-const char* password = "35119823661631901660";
-WiFiServer server(80);
-String server_logic(WiFiClient* client);
-void respanse_example();
-String header;
-//HILFS SACHEN FÜR Webseiteende/////////////////////////////////////////////////////////////////
-
-//HILFSACHEN FÜR COMPUTERGRAFIK/////////////////////////////////////////////////////////////////
-//objeck mit vertices farbe pro vertice matrix verschieben + matrix rotation // vor rendern move und rotate verbinden 
-
-
-
-float runden(float x){
-	if( abs(x-(int)x) >= (0.5))
-        if(x>0)
-			return (int)x+1;
-		else 
-			return (int)x-1;
-  else   
-      return (int)x;
-}
-void v_m(float v[3],float m[3][3]){
-    float ret[3] = {v[0],v[1],v[2]};
-    v[0] = runden(m[0][0]*ret[0] + m[0][1]*ret[1]+ m[0][2]*ret[2]);
-    v[1] = runden(m[1][0]*ret[0] + m[1][1]*ret[1]+ m[1][2]*ret[2]);    
-    v[2] = runden(m[2][0]*ret[0] + m[2][1]*ret[1]+ m[2][2]*ret[2]);
-    
-}
-void move(int x,int y,float m[3][3]){
-    m[0][2] = m[0][2] + x;
-    m[1][2] = m[1][2] + y;
-}
-void m_m2(float m1[3][3], float m2[3][3]){
-	float ms[3][3] = {{m1[0][0],m1[0][1],m1[0][2]},{m1[1][0],m1[1][1],m1[1][2]},{m1[2][0],m1[2][1],m1[2][2]}};
-	float product = 0.0f;
- int i,j,k;
-	for (i = 0; i < 3; i++){
-		for (j = 0; j < 3; j++){
-			 product = 0; 
-			 for (k = 0; k < 3; k++){
-				product += ms[i][k] * m2[k][j];
-			 }
-			 m1[i][j] = product;
-
-		}
-	}  
-		
-	
-}
-void lh(float m[3][3]){float mr[3][3] = {{0.7,-0.7,0},{0.7,0.7,0},{0,0,1}}; m_m2(m,mr);}
-void lg(float m[3][3]){float mr[3][3] = {{0,-1,0},{1,0,0},{0,0,1}}; 		m_m2(m,mr);}
-void rh(float m[3][3]){float mr[3][3] = {{0.7,0.7,0},{-0.7,0.7,0},{0,0,1}}; m_m2(m,mr);}
-void rg(float m[3][3]){float mr[3][3] = {{0,1,0},{-1,0,0},{0,0,1}}; 		m_m2(m,mr);}
-
-class MyObjeck{
-	public:
-	float vert1[4][3] = {{0,0,1},{1,0,1},{-1,0,1},{0,1,1}};
-	float mv[3][3]  = {{1,0,0},{0,1,0},{0,0,1}} ;
-	float mr[3][3]  = {{1,0,0},{0,1,0},{0,0,1}} ;
-	 void draw(){
-		float cur[3][3] = {{1,0,0},{0,1,0},{0,0,1}} ;
-		m_m2(cur,mv);
-		m_m2(cur,mr);
-		for(int i = 0 ; i<4;i++){
-			float curv[3]  ={0,0,0};
-			curv[0]=  vert1[i][0];
-			curv[1]=  vert1[i][1];
-			curv[2]=  vert1[i][2];
-			v_m(curv,cur);
-			leds[myxy(curv[0],curv[1])] = CRGB(10,10,10);
-			FastLED.show();
-		}	
-	}
-};
-
-
-//HILFSACHEN FÜR COMPUTERGRAFIK ende /////////////////////////////////////////////////////////////////
-
 
 
 bool gliter = false;
 
-	MyObjeck tetris =  MyObjeck();
-	
+
+
+// Daten des WiFi-Netzwerks
+
+const char* ssid = "FRITZ!Box 7590 ZV";
+const char* password = "35119823661631901660";
+
+// Port des Web Servers auf 80 setzen
+WiFiServer server(80);
+
+
+String server_logic(WiFiClient* client);
+void respanse_example();
+
+// Variable für den HTTP Request
+String header;
 
 void setup() {
   Serial.begin(115200);
@@ -127,18 +55,7 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   server.begin();
-
-
-	move(2,1, tetris.mv);
-
 }
-
-
-//
-//merke rotation + rotations funktion sucht nur eine matrix aus    0 nicht gedreht  -- links45   ++rechts45  8=0 -8=0 
-//
-
-
 
 void loop() {
   WiFiClient client = server.available();   // Auf Clients (Server-Aufrufe) warten
@@ -153,19 +70,13 @@ void loop() {
 		client.stop();    Serial.println("Client disconnected");//close conection
 		Serial.println("");
 	}
-	if(gliter){
-		leds[random(0,63)] = CRGB(random(0,255),random(0,255),random(0,255));
-		FastLED.show();
+  if(gliter){
+    leds[random(0,63)] = CRGB(random(0,255),random(0,255),random(0,255));
+    FastLED.show();
 
-	}
+  }
 
   
-	tetris.draw();
-  delay(500);
-  rg(tetris.mr);
-  FastLED.clear();
-  
-  return ; 
 }
 
 void parse_answer2(String rst){
