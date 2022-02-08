@@ -180,10 +180,24 @@
 			<div id="farb_vorschau" style="width: 50px;height: 50px;margin:0;padding:0; float:right;"></div>
 		</div>
 		
+		<div>
+		<input type="text" id="comand"></input>
+		<button onclick="senden_comand()">Send </button><br/>
+		<text id="answer" style="color:white">Test test test</text>
+		</div>
+		
 		<script>
 		
 		let { r, g, b } = {r:255,g:255,b:1};console.log(r+g+b);
 		
+		function senden_comand(){
+			let send = "r";
+			var all = document.getElementById('comand');
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open( "GET", all.value, false );
+			xmlHttp.send( null );
+				
+		}
 		function senden(){
 			let send = "r";
 			var all = document.getElementsByClassName('block1');

@@ -34,7 +34,7 @@ String header;
 //objeck mit vertices farbe pro vertice matrix verschieben + matrix rotation // vor rendern move und rotate verbinden 
 
 
-
+/*
 float runden(float x){
 	if( abs(x-(int)x) >= (0.5))
         if(x>0)
@@ -46,9 +46,9 @@ float runden(float x){
 }
 void v_m(float v[3],float m[3][3]){
     float ret[3] = {v[0],v[1],v[2]};
-    v[0] = runden(m[0][0]*ret[0] + m[0][1]*ret[1]+ m[0][2]*ret[2]);
-    v[1] = runden(m[1][0]*ret[0] + m[1][1]*ret[1]+ m[1][2]*ret[2]);    
-    v[2] = runden(m[2][0]*ret[0] + m[2][1]*ret[1]+ m[2][2]*ret[2]);
+    v[0] = (m[0][0]*ret[0] + m[0][1]*ret[1]+ m[0][2]*ret[2]);
+    v[1] = (m[1][0]*ret[0] + m[1][1]*ret[1]+ m[1][2]*ret[2]);    
+    v[2] = (m[2][0]*ret[0] + m[2][1]*ret[1]+ m[2][2]*ret[2]);
     
 }
 void move(int x,int y,float m[3][3]){
@@ -76,17 +76,62 @@ void lh(float m[3][3]){float mr[3][3] = {{0.7,-0.7,0},{0.7,0.7,0},{0,0,1}}; m_m2
 void lg(float m[3][3]){float mr[3][3] = {{0,-1,0},{1,0,0},{0,0,1}}; 		m_m2(m,mr);}
 void rh(float m[3][3]){float mr[3][3] = {{0.7,0.7,0},{-0.7,0.7,0},{0,0,1}}; m_m2(m,mr);}
 void rg(float m[3][3]){float mr[3][3] = {{0,1,0},{-1,0,0},{0,0,1}}; 		m_m2(m,mr);}
+*/
 
+static const int num_vert = 4;
+//fix firtel umdrehungen 
 class MyObjeck{
+	
+
+	private:
+	void v_m(float v[3],float m[3][3]){
+		float ret[3] = {v[0],v[1],v[2]};
+		v[0] = (m[0][0]*ret[0] + m[0][1]*ret[1]+ m[0][2]*ret[2]);
+		v[1] = (m[1][0]*ret[0] + m[1][1]*ret[1]+ m[1][2]*ret[2]);    
+		v[2] = (m[2][0]*ret[0] + m[2][1]*ret[1]+ m[2][2]*ret[2]);
+	}
+
+	void m_m2(float m1[3][3], float m2[3][3]){
+		float ms[3][3] = {{m1[0][0],m1[0][1],m1[0][2]},{m1[1][0],m1[1][1],m1[1][2]},{m1[2][0],m1[2][1],m1[2][2]}};
+		float product = 0.0f;
+	 int i,j,k;
+		for (i = 0; i < 3; i++){
+			for (j = 0; j < 3; j++){
+				 product = 0; 
+				 for (k = 0; k < 3; k++){
+					product += ms[i][k] * m2[k][j];
+				 }
+				 m1[i][j] = product;
+
+			}
+		}  
+			
+		
+	}
+
+
 	public:
-	float vert1[4][3] = {{0,0,1},{1,0,1},{-1,0,1},{0,1,1}};
+
+  MyObjeck(){}
+  MyObjeck(int x , int y){move(x,y);}
+ 
+	void lh(){float fmr[3][3] = {{0.7,-0.7,0},{0.7,0.7,0},{0,0,1}}; m_m2(mr,fmr);}
+	void lg(){float fmr[3][3] = {{0,-1,0},{1,0,0},{0,0,1}}; 		m_m2(mr,fmr);}
+	void rh(){float fmr[3][3] = {{0.7,0.7,0},{-0.7,0.7,0},{0,0,1}}; m_m2(mr,fmr);}
+	void rg(){float fmr[3][3] = {{0,1,0},{-1,0,0},{0,0,1}}; 		m_m2(mr,fmr);}
+	void move(int x,int y){
+		mv[0][2] = mv[0][2] + x;
+		mv[1][2] = mv[1][2] + y;
+	}
+	
+	float vert1[num_vert][3] = {{0,0,1},{1,0,1},{-1,0,1},{0,1,1}};
 	float mv[3][3]  = {{1,0,0},{0,1,0},{0,0,1}} ;
 	float mr[3][3]  = {{1,0,0},{0,1,0},{0,0,1}} ;
-	 void draw(){
+	void draw(){
 		float cur[3][3] = {{1,0,0},{0,1,0},{0,0,1}} ;
 		m_m2(cur,mv);
 		m_m2(cur,mr);
-		for(int i = 0 ; i<4;i++){
+		for(int i = 0 ; i<num_vert;i++){
 			float curv[3]  ={0,0,0};
 			curv[0]=  vert1[i][0];
 			curv[1]=  vert1[i][1];
@@ -104,8 +149,12 @@ class MyObjeck{
 
 
 bool gliter = false;
+bool bspektrum = false;
 
-	MyObjeck tetris =  MyObjeck();
+	//MyObjeck tetris1 =  MyObjeck(2,1);
+  //MyObjeck tetris2 =  MyObjeck(6,1);
+  //MyObjeck tetris3 =  MyObjeck(2,6);
+  //MyObjeck tetris4 =  MyObjeck(6,6);
 	
 
 void setup() {
@@ -128,8 +177,8 @@ void setup() {
   Serial.println(WiFi.localIP());
   server.begin();
 
-
-	move(2,1, tetris.mv);
+	//tetris.move(2,1);
+	//move(2,1, tetris.mv);
 
 }
 
@@ -158,22 +207,60 @@ void loop() {
 		FastLED.show();
 
 	}
+ if(bspektrum){
+    sspektrum();
+    FastLED.show();
 
+  }
   
-	tetris.draw();
-  delay(500);
-  rg(tetris.mr);
-  FastLED.clear();
+	//tetris1.draw();
+  //tetris2.draw();
+  //tetris3.draw();
+ // tetris4.draw();
+  //delay(500);
+  //tetris1.rg();
+  //tetris2.rg();
+  //tetris3.rg();
+  //tetris4.rg();
   
-  return ; 
+ // FastLED.clear();
+  
+  //return ; 
 }
 
+
+void sspektrum(){
+  //oben links
+  for(int y = 0 ,fy=0; y<4;y++,fy++){
+    for(int x = 0 ,fx=0; x<4;x++,fx++){
+      leds[XY(x,y)] = CRGB(fy*20+5,fx*20+5,0);
+    }
+  }
+  //unten rechts 
+    for(int y = 4,fy=0 ; y<8;y++,fy++){
+    for(int x = 4, fx=0; x<8;x++,fx++){
+      leds[XY(x,y)] = CRGB(0,fy*20+5,fx*20+5);
+    }
+  }
+    for(int y = 0 ,fy=0; y<4;y++,fy++){
+    for(int x = 4, fx=0; x<8;x++,fx++){
+      leds[XY(x,y)] = CRGB(fy*20+5,0,fx*20+5);
+    }
+  }
+    for(int y = 4 ,fy=0; y<8;y++,fy++){
+    for(int x = 0, fx=0; x<4;x++,fx++){
+      leds[XY(x,y)] = CRGB(fy*20+5,fx*20,100);
+    }
+  }
+}
 void parse_answer2(String rst){
 	    
 	int val[192];
 	int val_pos = 0; 
 	String cur = "";
 
+  if(rst[5]=='s')
+    bspektrum = !bspektrum;
   if(rst[5]=='g')
     gliter = !gliter; 
   if(rst[5] !='r' )
@@ -437,10 +524,24 @@ send +="      <button onclick=\"setColor(\'r\',255);setColor(\'g\',255);setColor
 send +="      <div id=\"farb_vorschau\" style=\"width: 50px;height: 50px;margin:0;padding:0; float:right;\"></div> \n ";
 send +="    </div> \n ";
 send +=" \n ";
+send +="    <div> \n ";
+send +="    <input type=\"text\" id=\"comand\"></input> \n ";
+send +="    <button onclick=\"senden_comand()\">Send </button><br/> \n ";
+send +="    <text id=\"answer\" style=\"color:white\">Test test test</text> \n ";
+send +="    </div> \n ";
+send +=" \n ";
 send +="    <script> \n ";
 send +=" \n ";
 send +="    let { r, g, b } = {r:255,g:255,b:1};console.log(r+g+b); \n ";
 send +=" \n ";
+send +="    function senden_comand(){ \n ";
+send +="      let send = \"r\"; \n ";
+send +="      var all = document.getElementById(\'comand\'); \n ";
+send +="      var xmlHttp = new XMLHttpRequest(); \n ";
+send +="      xmlHttp.open( \"GET\", all.value, false ); \n ";
+send +="      xmlHttp.send( null ); \n ";
+send +=" \n ";
+send +="    } \n ";
 send +="    function senden(){ \n ";
 send +="      let send = \"r\"; \n ";
 send +="      var all = document.getElementsByClassName(\'block1\'); \n ";
@@ -530,6 +631,7 @@ send +=" \n ";
 send +="  </script> \n ";
 send +="  </body> \n ";
 send +="</html> \n ";
+
 
 
 
